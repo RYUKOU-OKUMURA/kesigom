@@ -11,6 +11,10 @@ let textObjects = [];
 let selectedTextId = null;
 let isDragging = false;
 let dragOffset = { x: 0, y: 0 };
+let isResizingText = false;
+let resizeStartX = 0;
+let resizeStartY = 0;
+let initialFontSize = 0;
 let savedState = null;
 let isPinching = false;
 let lastPinchDistance = 0;
@@ -56,6 +60,13 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('editFontSizeValue').textContent = e.target.value;
     });
     
+    // 消しゴムサイズスライダーのイベント
+    document.getElementById('eraserSize').addEventListener('input', (e) => {
+        eraserSize = parseInt(e.target.value);
+        document.getElementById('eraserSizeValue').textContent = eraserSize;
+        updateEraserCursorSize();
+    });
+    
     // テキスト編集パネルのイベント
     document.getElementById('updateText').addEventListener('click', updateTextObject);
     document.getElementById('deleteText').addEventListener('click', deleteTextObject);
@@ -84,6 +95,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Enter') {
             addText();
         }
+    });
+    
+    // 閉じるボタンのイベント
+    document.getElementById('closeTextInput').addEventListener('click', () => {
+        document.getElementById('textInput').style.display = 'none';
     });
     
     // ポップアップ外クリックで閉じる
@@ -118,6 +134,13 @@ function updateEraserCursor(e) {
     const cursor = document.getElementById('eraserCursor');
     cursor.style.left = (e.pageX - eraserSize/2) + 'px';
     cursor.style.top = (e.pageY - eraserSize/2) + 'px';
+}
+
+// 消しゴムカーソルのサイズ更新
+function updateEraserCursorSize() {
+    const cursor = document.getElementById('eraserCursor');
+    cursor.style.width = eraserSize + 'px';
+    cursor.style.height = eraserSize + 'px';
 }
 
 // 消しゴムカーソルの表示
@@ -230,6 +253,14 @@ function selectTool(tool) {
     document.querySelectorAll('.tool').forEach(btn => btn.classList.remove('active'));
     document.getElementById(tool + 'Tool').classList.add('active');
     
+    // 消しゴムサイズコントロールの表示/非表示
+    const eraserSizeControl = document.getElementById('eraserSizeControl');
+    if (tool === 'eraser') {
+        eraserSizeControl.style.display = 'block';
+    } else {
+        eraserSizeControl.style.display = 'none';
+    }
+    
     // カーソル変更と消しゴムカーソル表示制御
     if (tool === 'eraser') {
         canvas.style.cursor = 'none'; // デフォルトカーソルを非表示
@@ -251,14 +282,26 @@ function handleMouseDown(e) {
     if (currentTool === 'eraser') {
         startDrawing(e);
     } else if (currentTool === 'text') {
-        // テキストオブジェクトをクリックしたか確認
-        const clickedText = getTextAtPosition(x, y);
-        if (clickedText) {
-            selectedTextId = clickedText.id;
-            isDragging = true;
-            dragOffset.x = x - clickedText.x;
-            dragOffset.y = y - clickedText.y;
+        // リサイズハンドルをクリックしたか確認
+        const resizeHandle = getResizeHandleAtPosition(x, y);
+        if (resizeHandle) {
+            isResizingText = true;
+            selectedTextId = resizeHandle.textId;
+            resizeStartX = x;
+            resizeStartY = y;
+            const textObj = textObjects.find(t => t.id === resizeHandle.textId);
+            initialFontSize = parseInt(textObj.fontSize);
             redrawCanvas();
+        } else {
+            // テキストオブジェクトをクリックしたか確認
+            const clickedText = getTextAtPosition(x, y);
+            if (clickedText) {
+                selectedTextId = clickedText.id;
+                isDragging = true;
+                dragOffset.x = x - clickedText.x;
+                dragOffset.y = y - clickedText.y;
+                redrawCanvas();
+            }
         }
     }
 }
@@ -272,28 +315,53 @@ function handleMouseMove(e) {
     
     if (currentTool === 'eraser' && isDrawing) {
         draw(e);
-    } else if (currentTool === 'text' && isDragging && selectedTextId) {
-        // テキストをドラッグ
-        const textObj = textObjects.find(t => t.id === selectedTextId);
-        if (textObj) {
-            textObj.x = x - dragOffset.x;
-            textObj.y = y - dragOffset.y;
-            redrawCanvas();
+    } else if (currentTool === 'text') {
+        if (isResizingText && selectedTextId) {
+            // テキストサイズをリサイズ
+            const textObj = textObjects.find(t => t.id === selectedTextId);
+            if (textObj) {
+                // ドラッグ距離に基づいてフォントサイズを計算
+                const distance = Math.sqrt(Math.pow(x - resizeStartX, 2) + Math.pow(y - resizeStartY, 2));
+                const direction = (x > resizeStartX || y > resizeStartY) ? 1 : -1;
+                const sizeChange = direction * distance * 0.5;
+                const newSize = Math.max(12, Math.min(100, initialFontSize + sizeChange));
+                textObj.fontSize = Math.round(newSize);
+                redrawCanvas();
+            }
+        } else if (isDragging && selectedTextId) {
+            // テキストをドラッグ
+            const textObj = textObjects.find(t => t.id === selectedTextId);
+            if (textObj) {
+                textObj.x = x - dragOffset.x;
+                textObj.y = y - dragOffset.y;
+                redrawCanvas();
+            }
         }
     }
     
     // カーソル更新
     if (currentTool === 'eraser') {
         updateEraserCursor(e);
+    } else if (currentTool === 'text') {
+        // リサイズハンドル上でカーソルを変更
+        const resizeHandle = getResizeHandleAtPosition(x, y);
+        if (resizeHandle) {
+            canvas.style.cursor = 'nwse-resize';
+        } else {
+            canvas.style.cursor = 'text';
+        }
     }
 }
 
 function handleMouseUp(e) {
     if (currentTool === 'eraser') {
         stopDrawing();
-    } else if (currentTool === 'text' && isDragging) {
-        isDragging = false;
-        saveState();
+    } else if (currentTool === 'text') {
+        if (isDragging || isResizingText) {
+            isDragging = false;
+            isResizingText = false;
+            saveState();
+        }
     }
 }
 
@@ -409,6 +477,7 @@ function addText() {
         // フォント設定を取得
         const fontSize = document.getElementById('fontSize').value;
         const fontWeight = document.getElementById('fontWeight').value;
+        const fontColor = document.getElementById('fontColor').value;
         
         // テキストオブジェクトを作成
         const textObj = {
@@ -418,7 +487,8 @@ function addText() {
             y: y,
             fontSize: fontSize,
             fontWeight: fontWeight,
-            fontFamily: 'Noto Sans JP'
+            fontFamily: 'Noto Sans JP',
+            color: fontColor
         };
         
         textObjects.push(textObj);
@@ -451,23 +521,42 @@ function redrawCanvas() {
         
         const fontStyle = textObj.fontWeight === '700' ? 'bold' : 'normal';
         ctx.font = `${fontStyle} ${textObj.fontSize}px '${textObj.fontFamily}'`;
-        ctx.fillStyle = 'black';
+        ctx.fillStyle = textObj.color || 'black';
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
         ctx.fillText(textObj.text, textObj.x, textObj.y);
         
-        // ドラッグ中のテキストのみ枠を描画
-        if (isDragging && selectedTextId === textObj.id) {
+        // 選択中のテキストに枠とリサイズハンドルを描画
+        if ((isDragging || isResizingText) && selectedTextId === textObj.id) {
             const metrics = ctx.measureText(textObj.text);
             const padding = 5;
+            
+            // 枠を描画
             ctx.strokeStyle = '#2196F3';
             ctx.lineWidth = 2;
-            ctx.strokeRect(
-                textObj.x - padding,
-                textObj.y - textObj.fontSize/2 - padding,
-                metrics.width + padding * 2,
-                textObj.fontSize + padding * 2
-            );
+            const boxX = textObj.x - padding;
+            const boxY = textObj.y - textObj.fontSize/2 - padding;
+            const boxWidth = metrics.width + padding * 2;
+            const boxHeight = textObj.fontSize + padding * 2;
+            
+            ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+            
+            // リサイズハンドルを描画（右下）
+            const handleSize = 10;
+            const handleX = boxX + boxWidth - handleSize/2;
+            const handleY = boxY + boxHeight - handleSize/2;
+            
+            ctx.fillStyle = '#2196F3';
+            ctx.fillRect(handleX, handleY, handleSize, handleSize);
+            
+            // リサイズ中は現在のフォントサイズを表示
+            if (isResizingText) {
+                ctx.save();
+                ctx.font = '12px sans-serif';
+                ctx.fillStyle = '#2196F3';
+                ctx.fillText(`${textObj.fontSize}px`, boxX, boxY - 5);
+                ctx.restore();
+            }
         }
         
         ctx.restore();
@@ -499,6 +588,39 @@ function getTextAtPosition(x, y) {
     return null;
 }
 
+// 指定位置のリサイズハンドルを取得
+function getResizeHandleAtPosition(x, y) {
+    // 逆順で検索（最前面から）
+    for (let i = textObjects.length - 1; i >= 0; i--) {
+        const textObj = textObjects[i];
+        ctx.save();
+        
+        const fontStyle = textObj.fontWeight === '700' ? 'bold' : 'normal';
+        ctx.font = `${fontStyle} ${textObj.fontSize}px '${textObj.fontFamily}'`;
+        const metrics = ctx.measureText(textObj.text);
+        
+        ctx.restore();
+        
+        // リサイズハンドルの位置を計算
+        const padding = 5;
+        const boxX = textObj.x - padding;
+        const boxY = textObj.y - textObj.fontSize/2 - padding;
+        const boxWidth = metrics.width + padding * 2;
+        const boxHeight = textObj.fontSize + padding * 2;
+        
+        const handleSize = 10;
+        const handleX = boxX + boxWidth - handleSize/2;
+        const handleY = boxY + boxHeight - handleSize/2;
+        
+        // リサイズハンドル内かチェック
+        if (x >= handleX && x <= handleX + handleSize &&
+            y >= handleY && y <= handleY + handleSize) {
+            return { textId: textObj.id };
+        }
+    }
+    return null;
+}
+
 // テキスト編集パネルを開く
 function openEditPanel(textObj) {
     const panel = document.getElementById('textEditPanel');
@@ -506,6 +628,7 @@ function openEditPanel(textObj) {
     document.getElementById('editFontSize').value = textObj.fontSize;
     document.getElementById('editFontSizeValue').textContent = textObj.fontSize;
     document.getElementById('editFontWeight').value = textObj.fontWeight;
+    document.getElementById('editFontColor').value = textObj.color || '#000000';
     
     panel.dataset.textId = textObj.id;
     panel.style.display = 'block';
@@ -523,6 +646,7 @@ function updateTextObject() {
         textObj.text = document.getElementById('editTextBox').value;
         textObj.fontSize = document.getElementById('editFontSize').value;
         textObj.fontWeight = document.getElementById('editFontWeight').value;
+        textObj.color = document.getElementById('editFontColor').value;
         
         redrawCanvas();
         closeEditPanel();
@@ -594,28 +718,37 @@ function loadTemporary() {
     if (saved) {
         savedState = JSON.parse(saved);
         
-        // テキストオブジェクトを復元
-        textObjects = JSON.parse(JSON.stringify(savedState.textObjects));
-        selectedTextId = null;
-        
-        // ベースキャンバスを復元
-        const baseImg = new Image();
-        baseImg.onload = function() {
-            baseCtx.clearRect(0, 0, baseCanvas.width, baseCanvas.height);
-            baseCtx.drawImage(baseImg, 0, 0);
+        // まず保存された画像からキャンバスサイズを取得
+        const tempImg = new Image();
+        tempImg.onload = function() {
+            // キャンバスサイズを設定
+            canvas.width = tempImg.width;
+            canvas.height = tempImg.height;
+            baseCanvas.width = tempImg.width;
+            baseCanvas.height = tempImg.height;
             
-            // キャンバスを復元
-            const img = new Image();
-            img.onload = function() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(img, 0, 0);
+            // テキストオブジェクトを復元
+            textObjects = JSON.parse(JSON.stringify(savedState.textObjects));
+            selectedTextId = null;
+            
+            // ベースキャンバスを復元
+            const baseImg = new Image();
+            baseImg.onload = function() {
+                baseCtx.clearRect(0, 0, baseCanvas.width, baseCanvas.height);
+                baseCtx.drawImage(baseImg, 0, 0);
+                
+                // キャンバスを復元（テキストを含む状態に再描画）
+                redrawCanvas();
                 
                 // 現在の状態を履歴に保存
                 saveState();
+                
+                // 編集エリアを表示（画像がロードされていない場合）
+                document.getElementById('editorArea').style.display = 'block';
             }
-            img.src = savedState.canvasData;
+            baseImg.src = savedState.baseCanvasData;
         }
-        baseImg.src = savedState.baseCanvasData;
+        tempImg.src = savedState.canvasData;
     }
 }
 
@@ -664,8 +797,8 @@ function handleTouchMove(e) {
         const textObj = textObjects.find(t => t.id === selectedTextId);
         if (textObj) {
             const newSize = parseInt(textObj.fontSize) * scale;
-            // サイズを制限（12〜72px）
-            textObj.fontSize = Math.max(12, Math.min(72, Math.round(newSize)));
+            // サイズを制限（12〜100px）
+            textObj.fontSize = Math.max(12, Math.min(100, Math.round(newSize)));
             
             redrawCanvas();
         }
@@ -688,3 +821,4 @@ window.addEventListener('load', () => {
     const saved = localStorage.getItem('tempSavedState');
     document.getElementById('loadBtn').disabled = !saved;
 });
+
