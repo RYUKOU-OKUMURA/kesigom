@@ -15,6 +15,92 @@ h1 {
     color: #333;
 }
 
+.app-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 30px;
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.instructions {
+    background: linear-gradient(145deg, #ffffff, #f9f9f9);
+    border-radius: 15px;
+    padding: 30px;
+    margin: 30px auto;
+    max-width: 600px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.instructions-title {
+    font-size: 1.3rem;
+    color: #4CAF50;
+    margin-bottom: 20px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.instructions-title::before {
+    content: "📋";
+    font-size: 1.5rem;
+}
+
+.instructions-list {
+    list-style: none;
+    padding-left: 0;
+    counter-reset: step-counter;
+}
+
+.instructions-list li {
+    position: relative;
+    padding-left: 50px;
+    margin-bottom: 18px;
+    line-height: 1.6;
+    color: #555;
+    font-size: 0.95rem;
+    counter-increment: step-counter;
+}
+
+.instructions-list li::before {
+    content: counter(step-counter);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 35px;
+    height: 35px;
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1.1rem;
+    box-shadow: 0 3px 10px rgba(76, 175, 80, 0.3);
+}
+
+.instructions-cta {
+    text-align: center;
+    font-size: 1.1rem;
+    color: #4CAF50;
+    font-weight: 600;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 2px dashed rgba(76, 175, 80, 0.3);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
 .upload-area {
     text-align: center;
     margin: 20px 0;
