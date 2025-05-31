@@ -53,6 +53,14 @@
                     ダウンロード
                 </button>
             </div>
+            
+            <!-- 消しゴムサイズ調整 -->
+            <div class="eraser-size-control" id="eraserSizeControl">
+                <label>消しゴムサイズ:
+                    <input type="range" id="eraserSize" min="10" max="100" value="30">
+                    <span id="eraserSizeValue">30</span>px
+                </label>
+            </div>
         </div>
         
         <!-- テキスト入力ポップアップ -->
@@ -60,7 +68,7 @@
             <input type="text" id="textBox" placeholder="テキストを入力">
             <div class="text-controls">
                 <label>サイズ:
-                    <input type="range" id="fontSize" min="12" max="72" value="24">
+                    <input type="range" id="fontSize" min="12" max="100" value="24">
                     <span id="fontSizeValue">24</span>px
                 </label>
                 <label>太さ:
@@ -69,8 +77,23 @@
                         <option value="700">太字</option>
                     </select>
                 </label>
+                <label>色:
+                    <select id="fontColor">
+                        <option value="#000000">黒</option>
+                        <option value="#FF0000">赤</option>
+                        <option value="#0000FF">青</option>
+                        <option value="#008000">緑</option>
+                        <option value="#FFA500">オレンジ</option>
+                        <option value="#800080">紫</option>
+                        <option value="#FFC0CB">ピンク</option>
+                        <option value="#A52A2A">茶色</option>
+                        <option value="#808080">グレー</option>
+                        <option value="#FFFFFF">白</option>
+                    </select>
+                </label>
             </div>
             <button id="addText">追加</button>
+            <button id="closeTextInput">閉じる</button>
         </div>
         
         <!-- テキスト編集パネル -->
@@ -81,13 +104,27 @@
                     <input type="text" id="editTextBox">
                 </label>
                 <label>サイズ:
-                    <input type="range" id="editFontSize" min="12" max="72">
+                    <input type="range" id="editFontSize" min="12" max="100">
                     <span id="editFontSizeValue">24</span>px
                 </label>
                 <label>太さ:
                     <select id="editFontWeight">
                         <option value="400">標準</option>
                         <option value="700">太字</option>
+                    </select>
+                </label>
+                <label>色:
+                    <select id="editFontColor">
+                        <option value="#000000">黒</option>
+                        <option value="#FF0000">赤</option>
+                        <option value="#0000FF">青</option>
+                        <option value="#008000">緑</option>
+                        <option value="#FFA500">オレンジ</option>
+                        <option value="#800080">紫</option>
+                        <option value="#FFC0CB">ピンク</option>
+                        <option value="#A52A2A">茶色</option>
+                        <option value="#808080">グレー</option>
+                        <option value="#FFFFFF">白</option>
                     </select>
                 </label>
                 <div class="edit-buttons">
