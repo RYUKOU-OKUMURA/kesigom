@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>テキスト消しゴムアプリ</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        @font-face {
+            font-family: 'Noto Sans JP';
+            src: url('./Noto Sans JP/NotoSansJP-Regular.ttf') format('truetype');
+            font-weight: 400;
+        }
+        @font-face {
+            font-family: 'Noto Sans JP';
+            src: url('./Noto Sans JP/NotoSansJP-Bold.ttf') format('truetype');
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <h1>テキスト消しゴムアプリ</h1>
+        
+        <!-- アップロード -->
+        <div class="upload-area">
+            <input type="file" id="upload" accept="image/*">
+            <label for="upload">画像を選択</label>
+        </div>
+        
+        <!-- 編集エリア -->
+        <div class="editor-area" id="editorArea" style="display: none;">
+            <canvas id="canvas"></canvas>
+            
+            <!-- ツールバー -->
+            <div class="toolbar">
+                <button id="eraserTool" class="tool active">
+                    消しゴム
+                </button>
+                <button id="textTool" class="tool">
+                    テキスト
+                </button>
+                <button id="undoBtn" class="undo">
+                    1つ前に戻す
+                </button>
+                <button id="saveBtn" class="save">
+                    一時保存
+                </button>
+                <button id="loadBtn" class="load">
+                    読み込み
+                </button>
+                <button id="downloadBtn" class="download">
+                    ダウンロード
+                </button>
+            </div>
+        </div>
+        
+        <!-- テキスト入力ポップアップ -->
+        <div id="textInput" class="text-input" style="display: none;">
+            <input type="text" id="textBox" placeholder="テキストを入力">
+            <div class="text-controls">
+                <label>サイズ:
+                    <input type="range" id="fontSize" min="12" max="72" value="24">
+                    <span id="fontSizeValue">24</span>px
+                </label>
+                <label>太さ:
+                    <select id="fontWeight">
+                        <option value="400">標準</option>
+                        <option value="700">太字</option>
+                    </select>
+                </label>
+            </div>
+            <button id="addText">追加</button>
+        </div>
+        
+        <!-- テキスト編集パネル -->
+        <div id="textEditPanel" class="text-edit-panel" style="display: none;">
+            <h3>テキストを編集</h3>
+            <div class="edit-controls">
+                <label>テキスト:
+                    <input type="text" id="editTextBox">
+                </label>
+                <label>サイズ:
+                    <input type="range" id="editFontSize" min="12" max="72">
+                    <span id="editFontSizeValue">24</span>px
+                </label>
+                <label>太さ:
+                    <select id="editFontWeight">
+                        <option value="400">標準</option>
+                        <option value="700">太字</option>
+                    </select>
+                </label>
+                <div class="edit-buttons">
+                    <button id="updateText">更新</button>
+                    <button id="deleteText">削除</button>
+                    <button id="closeEdit">閉じる</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="editor.js"></script>
+</body>
+</html>
