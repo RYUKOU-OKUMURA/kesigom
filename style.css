@@ -26,6 +26,13 @@ h1 {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.privacy-notice {
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    margin: 10px 0 20px;
+}
+
 .instructions {
     background: linear-gradient(145deg, #ffffff, #f9f9f9);
     border-radius: 15px;
