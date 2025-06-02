@@ -392,18 +392,25 @@ function startDrawing(e) {
     const x = (e.clientX - rect.left) * scaleX;
     const y = (e.clientY - rect.top) * scaleY;
     
-    // メインキャンバスとベースキャンバスの両方で消去
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.beginPath();
-    ctx.arc(x, y, eraserSize/2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalCompositeOperation = 'source-over';
+    const smartEraser = document.getElementById('smartEraser').checked;
     
-    baseCtx.globalCompositeOperation = 'destination-out';
-    baseCtx.beginPath();
-    baseCtx.arc(x, y, eraserSize/2, 0, Math.PI * 2);
-    baseCtx.fill();
-    baseCtx.globalCompositeOperation = 'source-over';
+    if (smartEraser) {
+        // スマート消去モード（背景色を保持）
+        smartErase(x, y);
+    } else {
+        // 通常の消去モード
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.arc(x, y, eraserSize/2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = 'source-over';
+        
+        baseCtx.globalCompositeOperation = 'destination-out';
+        baseCtx.beginPath();
+        baseCtx.arc(x, y, eraserSize/2, 0, Math.PI * 2);
+        baseCtx.fill();
+        baseCtx.globalCompositeOperation = 'source-over';
+    }
 }
 
 function draw(e) {
@@ -416,18 +423,25 @@ function draw(e) {
     const x = (e.clientX - rect.left) * scaleX;
     const y = (e.clientY - rect.top) * scaleY;
     
-    // メインキャンバスとベースキャンバスの両方で消去
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.beginPath();
-    ctx.arc(x, y, eraserSize/2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalCompositeOperation = 'source-over';
+    const smartEraser = document.getElementById('smartEraser').checked;
     
-    baseCtx.globalCompositeOperation = 'destination-out';
-    baseCtx.beginPath();
-    baseCtx.arc(x, y, eraserSize/2, 0, Math.PI * 2);
-    baseCtx.fill();
-    baseCtx.globalCompositeOperation = 'source-over';
+    if (smartEraser) {
+        // スマート消去モード（背景色を保持）
+        smartErase(x, y);
+    } else {
+        // 通常の消去モード
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.arc(x, y, eraserSize/2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = 'source-over';
+        
+        baseCtx.globalCompositeOperation = 'destination-out';
+        baseCtx.beginPath();
+        baseCtx.arc(x, y, eraserSize/2, 0, Math.PI * 2);
+        baseCtx.fill();
+        baseCtx.globalCompositeOperation = 'source-over';
+    }
 }
 
 function stopDrawing() {
@@ -478,6 +492,7 @@ function addText() {
         const fontSize = document.getElementById('fontSize').value;
         const fontWeight = document.getElementById('fontWeight').value;
         const fontColor = document.getElementById('fontColor').value;
+        const fontFamily = document.getElementById('fontFamily').value;
         
         // テキストオブジェクトを作成
         const textObj = {
@@ -487,7 +502,7 @@ function addText() {
             y: y,
             fontSize: fontSize,
             fontWeight: fontWeight,
-            fontFamily: 'Noto Sans JP',
+            fontFamily: fontFamily,
             color: fontColor
         };
         
@@ -519,8 +534,9 @@ function redrawCanvas() {
     textObjects.forEach(textObj => {
         ctx.save();
         
+        // フォント設定
         const fontStyle = textObj.fontWeight === '700' ? 'bold' : 'normal';
-        ctx.font = `${fontStyle} ${textObj.fontSize}px '${textObj.fontFamily}'`;
+        ctx.font = `${fontStyle} ${textObj.fontSize}px ${textObj.fontFamily}`;
         ctx.fillStyle = textObj.color || 'black';
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
@@ -535,9 +551,9 @@ function redrawCanvas() {
             ctx.strokeStyle = '#2196F3';
             ctx.lineWidth = 2;
             const boxX = textObj.x - padding;
-            const boxY = textObj.y - textObj.fontSize/2 - padding;
+            const boxY = textObj.y - parseInt(textObj.fontSize)/2 - padding;
             const boxWidth = metrics.width + padding * 2;
-            const boxHeight = textObj.fontSize + padding * 2;
+            const boxHeight = parseInt(textObj.fontSize) + padding * 2;
             
             ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
             
@@ -570,8 +586,9 @@ function getTextAtPosition(x, y) {
         const textObj = textObjects[i];
         ctx.save();
         
+        // フォント設定
         const fontStyle = textObj.fontWeight === '700' ? 'bold' : 'normal';
-        ctx.font = `${fontStyle} ${textObj.fontSize}px '${textObj.fontFamily}'`;
+        ctx.font = `${fontStyle} ${textObj.fontSize}px ${textObj.fontFamily}`;
         const metrics = ctx.measureText(textObj.text);
         
         ctx.restore();
@@ -580,8 +597,8 @@ function getTextAtPosition(x, y) {
         const padding = 5;
         if (x >= textObj.x - padding &&
             x <= textObj.x + metrics.width + padding &&
-            y >= textObj.y - textObj.fontSize/2 - padding &&
-            y <= textObj.y + textObj.fontSize/2 + padding) {
+            y >= textObj.y - parseInt(textObj.fontSize)/2 - padding &&
+            y <= textObj.y + parseInt(textObj.fontSize)/2 + padding) {
             return textObj;
         }
     }
@@ -595,8 +612,9 @@ function getResizeHandleAtPosition(x, y) {
         const textObj = textObjects[i];
         ctx.save();
         
+        // フォント設定
         const fontStyle = textObj.fontWeight === '700' ? 'bold' : 'normal';
-        ctx.font = `${fontStyle} ${textObj.fontSize}px '${textObj.fontFamily}'`;
+        ctx.font = `${fontStyle} ${textObj.fontSize}px ${textObj.fontFamily}`;
         const metrics = ctx.measureText(textObj.text);
         
         ctx.restore();
@@ -604,9 +622,9 @@ function getResizeHandleAtPosition(x, y) {
         // リサイズハンドルの位置を計算
         const padding = 5;
         const boxX = textObj.x - padding;
-        const boxY = textObj.y - textObj.fontSize/2 - padding;
+        const boxY = textObj.y - parseInt(textObj.fontSize)/2 - padding;
         const boxWidth = metrics.width + padding * 2;
-        const boxHeight = textObj.fontSize + padding * 2;
+        const boxHeight = parseInt(textObj.fontSize) + padding * 2;
         
         const handleSize = 10;
         const handleX = boxX + boxWidth - handleSize/2;
@@ -628,6 +646,7 @@ function openEditPanel(textObj) {
     document.getElementById('editFontSize').value = textObj.fontSize;
     document.getElementById('editFontSizeValue').textContent = textObj.fontSize;
     document.getElementById('editFontWeight').value = textObj.fontWeight;
+    document.getElementById('editFontFamily').value = textObj.fontFamily || "'Noto Sans JP', sans-serif";
     document.getElementById('editFontColor').value = textObj.color || '#000000';
     
     panel.dataset.textId = textObj.id;
@@ -646,6 +665,7 @@ function updateTextObject() {
         textObj.text = document.getElementById('editTextBox').value;
         textObj.fontSize = document.getElementById('editFontSize').value;
         textObj.fontWeight = document.getElementById('editFontWeight').value;
+        textObj.fontFamily = document.getElementById('editFontFamily').value;
         textObj.color = document.getElementById('editFontColor').value;
         
         redrawCanvas();
@@ -821,4 +841,101 @@ window.addEventListener('load', () => {
     const saved = localStorage.getItem('tempSavedState');
     document.getElementById('loadBtn').disabled = !saved;
 });
+
+
+// スマート消去機能（背景色を保持）
+function smartErase(centerX, centerY) {
+    const radius = eraserSize / 2;
+    
+    // 消去エリアの境界を計算
+    const x = Math.max(0, Math.floor(centerX - radius));
+    const y = Math.max(0, Math.floor(centerY - radius));
+    const width = Math.min(canvas.width - x, Math.ceil(radius * 2));
+    const height = Math.min(canvas.height - y, Math.ceil(radius * 2));
+    
+    // 消去エリアの画像データを取得
+    const imageData = ctx.getImageData(x, y, width, height);
+    const data = imageData.data;
+    
+    // エリア周辺の背景色をサンプリング
+    const bgColors = sampleBackgroundColors(centerX, centerY, radius * 2);
+    
+    // 各ピクセルを処理
+    for (let py = 0; py < height; py++) {
+        for (let px = 0; px < width; px++) {
+            // 円形マスク内かチェック
+            const dx = (x + px) - centerX;
+            const dy = (y + py) - centerY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance <= radius) {
+                const i = (py * width + px) * 4;
+                
+                // 現在のピクセルの色
+                const currentColor = [data[i], data[i + 1], data[i + 2]];
+                
+                // 最も近い背景色を見つける
+                const bgColor = findClosestBackgroundColor(currentColor, bgColors);
+                
+                // 色の差を計算
+                const colorDiff = Math.abs(currentColor[0] - bgColor[0]) + 
+                                Math.abs(currentColor[1] - bgColor[1]) + 
+                                Math.abs(currentColor[2] - bgColor[2]);
+                
+                // 背景色と大きく異なる場合（テキストやイラストの可能性）
+                if (colorDiff > 50) {
+                    // 背景色で置き換え
+                    data[i] = bgColor[0];
+                    data[i + 1] = bgColor[1];
+                    data[i + 2] = bgColor[2];
+                }
+            }
+        }
+    }
+    
+    // 編集したデータを適用
+    ctx.putImageData(imageData, x, y);
+    baseCtx.putImageData(imageData, x, y);
+}
+
+// 背景色のサンプリング
+function sampleBackgroundColors(centerX, centerY, sampleRadius) {
+    const colors = [];
+    const samplePoints = 8; // サンプリングポイント数
+    
+    for (let i = 0; i < samplePoints; i++) {
+        const angle = (i / samplePoints) * Math.PI * 2;
+        const sx = Math.round(centerX + Math.cos(angle) * sampleRadius);
+        const sy = Math.round(centerY + Math.sin(angle) * sampleRadius);
+        
+        // キャンバス内のポイントのみサンプリング
+        if (sx >= 0 && sx < canvas.width && sy >= 0 && sy < canvas.height) {
+            const pixel = ctx.getImageData(sx, sy, 1, 1).data;
+            colors.push([pixel[0], pixel[1], pixel[2]]);
+        }
+    }
+    
+    return colors;
+}
+
+// 最も近い背景色を見つける
+function findClosestBackgroundColor(targetColor, bgColors) {
+    if (bgColors.length === 0) return targetColor;
+    
+    let minDiff = Infinity;
+    let closestColor = bgColors[0];
+    
+    for (const bgColor of bgColors) {
+        const diff = Math.abs(targetColor[0] - bgColor[0]) + 
+                    Math.abs(targetColor[1] - bgColor[1]) + 
+                    Math.abs(targetColor[2] - bgColor[2]);
+        
+        if (diff < minDiff) {
+            minDiff = diff;
+            closestColor = bgColor;
+        }
+    }
+    
+    return closestColor;
+}
 
