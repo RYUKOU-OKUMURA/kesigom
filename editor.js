@@ -160,6 +160,15 @@ function handleImageUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
     
+    // 全状態をリセット
+    textObjects = [];
+    selectedTextId = null;
+    history = [];
+    historyStep = -1;
+    savedState = null;
+    localStorage.removeItem('tempSavedState');
+    document.getElementById('loadBtn').disabled = true;
+    
     const reader = new FileReader();
     
     reader.onload = function(event) {
@@ -731,6 +740,9 @@ function saveTemporary() {
     document.getElementById('loadBtn').disabled = false;
     
     alert('一時保存しました');
+    
+    // 自動で読み込み処理を実行
+    loadTemporary();
 }
 
 function loadTemporary() {
