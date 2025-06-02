@@ -8,13 +8,8 @@
     <style>
         @font-face {
             font-family: 'Noto Sans JP';
-            src: url('./Noto_Sans_JP/static/NotoSansJP-Regular.ttf') format('truetype');
-            font-weight: 400;
-        }
-        @font-face {
-            font-family: 'Noto Sans JP';
-            src: url('./Noto_Sans_JP/static/NotoSansJP-Bold.ttf') format('truetype');
-            font-weight: 700;
+            src: url('./Noto_Sans_JP/NotoSansJP-VariableFont_wght.ttf') format('truetype');
+            font-weight: 100 900;
         }
     </style>
 </head>
@@ -75,6 +70,10 @@
                     <input type="range" id="eraserSize" min="10" max="100" value="30">
                     <span id="eraserSizeValue">30</span>px
                 </label>
+                <label>
+                    <input type="checkbox" id="smartEraser" checked>
+                    スマート消去（背景を保持）
+                </label>
             </div>
         </div>
         
@@ -85,6 +84,19 @@
                 <label>サイズ:
                     <input type="range" id="fontSize" min="12" max="100" value="24">
                     <span id="fontSizeValue">24</span>px
+                </label>
+                <label>フォント:
+                    <select id="fontFamily">
+                        <option value="'Noto Sans JP', sans-serif">Noto Sans JP</option>
+                        <option value="'Yu Gothic', 'YuGothic', sans-serif">游ゴシック</option>
+                        <option value="'Yu Mincho', 'YuMincho', serif">游明朝</option>
+                        <option value="'Meiryo', sans-serif">メイリオ</option>
+                        <option value="'MS Gothic', 'MS ゴシック', monospace">MSゴシック</option>
+                        <option value="'MS Mincho', 'MS 明朝', serif">MS明朝</option>
+                        <option value="'Arial', sans-serif">Arial</option>
+                        <option value="'Times New Roman', serif">Times New Roman</option>
+                        <option value="'Courier New', monospace">Courier New</option>
+                    </select>
                 </label>
                 <label>太さ:
                     <select id="fontWeight">
@@ -121,6 +133,19 @@
                 <label>サイズ:
                     <input type="range" id="editFontSize" min="12" max="100">
                     <span id="editFontSizeValue">24</span>px
+                </label>
+                <label>フォント:
+                    <select id="editFontFamily">
+                        <option value="'Noto Sans JP', sans-serif">Noto Sans JP</option>
+                        <option value="'Yu Gothic', 'YuGothic', sans-serif">游ゴシック</option>
+                        <option value="'Yu Mincho', 'YuMincho', serif">游明朝</option>
+                        <option value="'Meiryo', sans-serif">メイリオ</option>
+                        <option value="'MS Gothic', 'MS ゴシック', monospace">MSゴシック</option>
+                        <option value="'MS Mincho', 'MS 明朝', serif">MS明朝</option>
+                        <option value="'Arial', sans-serif">Arial</option>
+                        <option value="'Times New Roman', serif">Times New Roman</option>
+                        <option value="'Courier New', monospace">Courier New</option>
+                    </select>
                 </label>
                 <label>太さ:
                     <select id="editFontWeight">
