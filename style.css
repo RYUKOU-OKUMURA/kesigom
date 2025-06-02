@@ -224,7 +224,7 @@ label[for="upload"]:hover {
 }
 
 .text-input {
-    position: absolute;
+    position: fixed;
     background: white;
     padding: 10px;
     border: 1px solid #ddd;
