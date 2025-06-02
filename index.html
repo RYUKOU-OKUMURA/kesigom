@@ -16,23 +16,23 @@
 <body>
     <div class="app">
         <h1 class="app-title">テキスト消しゴムアプリ</h1>
-        <p class="privacy-notice">アップロードされた画像はブラウザ内でのみ表示・編集され、サーバーへの送信や他用途での利用はありません。</p>
+        <p class="privacy-notice">読み込みされた画像はブラウザ内でのみ表示・編集され、サーバーへの送信や他用途での利用はありません。</p>
         
         <!-- 使い方説明 -->
         <div class="instructions">
             <h2 class="instructions-title">使い方手順:</h2>
             <ol class="instructions-list">
-                <li>テキストを修正したい画像を選択しアップロードします。</li>
+                <li>テキストを修正したい画像を選択し読み込みします。</li>
                 <li>消しゴムボタンを押してテキストを消します。（サイズ変更可）</li>
                 <li>テキストボタンを押し、テキストボックスでテキストを入力します。（文字のサイズと色は変更可）</li>
                 <li>一時保存します。</li>
                 <li>全ての修正が終わったら、一時保存を押して、必ず「読み込み」を押します。</li>
-                <li>最後にダウンロードボタンを押すことで、画像をダウンロードできます。</li>
+                <li>最後に保存ボタンを押すことで、画像をダウンロードできます。</li>
             </ol>
-            <p class="instructions-cta">まずは画像をアップロード！（上限5MB）</p>
+            <p class="instructions-cta">まずは画像を読み込み！（上限5MB）</p>
         </div>
         
-        <!-- アップロード -->
+        <!-- 読み込み -->
         <div class="upload-area">
             <input type="file" id="upload" accept="image/*">
             <label for="upload">画像を選択</label>
@@ -60,7 +60,7 @@
                     読み込み
                 </button>
                 <button id="downloadBtn" class="download">
-                    ダウンロード
+                    保存
                 </button>
             </div>
             
