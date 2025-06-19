@@ -79,7 +79,7 @@
         
         <!-- テキスト入力ポップアップ -->
         <div id="textInput" class="text-input" style="display: none;">
-            <input type="text" id="textBox" placeholder="テキストを入力">
+            <textarea id="textBox" placeholder="テキストを入力" rows="3"></textarea>
             <div class="text-controls">
                 <label>サイズ:
                     <input type="range" id="fontSize" min="12" max="100" value="24">
@@ -118,6 +118,13 @@
                         <option value="#FFFFFF">白</option>
                     </select>
                 </label>
+                <label>配置:
+                    <select id="textAlign">
+                        <option value="left">左寄せ</option>
+                        <option value="center">中央揃え</option>
+                        <option value="right">右寄せ</option>
+                    </select>
+                </label>
             </div>
             <button id="addText">追加</button>
             <button id="closeTextInput">閉じる</button>
@@ -128,7 +135,7 @@
             <h3>テキストを編集</h3>
             <div class="edit-controls">
                 <label>テキスト:
-                    <input type="text" id="editTextBox">
+                    <textarea id="editTextBox" rows="3"></textarea>
                 </label>
                 <label>サイズ:
                     <input type="range" id="editFontSize" min="12" max="100">
@@ -165,6 +172,13 @@
                         <option value="#A52A2A">茶色</option>
                         <option value="#808080">グレー</option>
                         <option value="#FFFFFF">白</option>
+                    </select>
+                </label>
+                <label>配置:
+                    <select id="editTextAlign">
+                        <option value="left">左寄せ</option>
+                        <option value="center">中央揃え</option>
+                        <option value="right">右寄せ</option>
                     </select>
                 </label>
                 <div class="edit-buttons">
