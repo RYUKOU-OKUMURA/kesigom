@@ -503,6 +503,7 @@ function addText() {
         const fontColor = document.getElementById('fontColor').value;
         const fontFamily = document.getElementById('fontFamily').value;
         const textAlign = document.getElementById('textAlign').value;
+        const writingMode = document.getElementById('writingMode').value;
         
         // テキストを改行で分割
         const lines = text.split('\n');
@@ -518,7 +519,8 @@ function addText() {
             fontWeight: fontWeight,
             fontFamily: fontFamily,
             color: fontColor,
-            textAlign: textAlign
+            textAlign: textAlign,
+            writingMode: writingMode
         };
         
         textObjects.push(textObj);
@@ -560,43 +562,75 @@ function redrawCanvas() {
         const lines = textObj.lines || [textObj.text];
         const lineHeight = parseInt(textObj.fontSize) * 1.2;
         
-        lines.forEach((line, index) => {
-            const lineY = textObj.y + (index * lineHeight) - ((lines.length - 1) * lineHeight / 2);
-            ctx.fillText(line, textObj.x, lineY);
-        });
+        if (textObj.writingMode === 'vertical') {
+            // 縦書きの場合
+            lines.forEach((line, lineIndex) => {
+                const chars = line.split('');
+                const lineX = textObj.x - (lineIndex * lineHeight);
+                
+                chars.forEach((char, charIndex) => {
+                    const charY = textObj.y + (charIndex * lineHeight) - ((chars.length - 1) * lineHeight / 2);
+                    ctx.fillText(char, lineX, charY);
+                });
+            });
+        } else {
+            // 横書きの場合（既存の処理）
+            lines.forEach((line, index) => {
+                const lineY = textObj.y + (index * lineHeight) - ((lines.length - 1) * lineHeight / 2);
+                ctx.fillText(line, textObj.x, lineY);
+            });
+        }
         
         // 選択中のテキストに枠とリサイズハンドルを描画
         if ((isDragging || isResizingText) && selectedTextId === textObj.id) {
             const lines = textObj.lines || [textObj.text];
             const lineHeight = parseInt(textObj.fontSize) * 1.2;
-            const totalHeight = lines.length * lineHeight;
-            
-            // 最大幅を計算
-            let maxWidth = 0;
-            lines.forEach(line => {
-                const metrics = ctx.measureText(line);
-                maxWidth = Math.max(maxWidth, metrics.width);
-            });
-            
             const padding = 5;
             
             // 枠を描画
             ctx.strokeStyle = '#2196F3';
             ctx.lineWidth = 2;
-            let boxX, boxWidth;
+            let boxX, boxY, boxWidth, boxHeight;
             
-            // 配置に応じて枠の位置を調整
-            if (textObj.textAlign === 'center') {
-                boxX = textObj.x - maxWidth/2 - padding;
-            } else if (textObj.textAlign === 'right') {
-                boxX = textObj.x - maxWidth - padding;
+            if (textObj.writingMode === 'vertical') {
+                // 縦書きの場合
+                const totalWidth = lines.length * lineHeight;
+                
+                // 最大高さを計算
+                let maxHeight = 0;
+                lines.forEach(line => {
+                    const chars = line.split('');
+                    maxHeight = Math.max(maxHeight, chars.length * lineHeight);
+                });
+                
+                boxX = textObj.x - totalWidth/2 - padding;
+                boxY = textObj.y - maxHeight/2 - padding;
+                boxWidth = totalWidth + padding * 2;
+                boxHeight = maxHeight + padding * 2;
             } else {
-                boxX = textObj.x - padding;
+                // 横書きの場合
+                const totalHeight = lines.length * lineHeight;
+                
+                // 最大幅を計算
+                let maxWidth = 0;
+                lines.forEach(line => {
+                    const metrics = ctx.measureText(line);
+                    maxWidth = Math.max(maxWidth, metrics.width);
+                });
+                
+                // 配置に応じて枠の位置を調整
+                if (textObj.textAlign === 'center') {
+                    boxX = textObj.x - maxWidth/2 - padding;
+                } else if (textObj.textAlign === 'right') {
+                    boxX = textObj.x - maxWidth - padding;
+                } else {
+                    boxX = textObj.x - padding;
+                }
+                
+                boxY = textObj.y - totalHeight/2 - padding;
+                boxWidth = maxWidth + padding * 2;
+                boxHeight = totalHeight + padding * 2;
             }
-            
-            const boxY = textObj.y - totalHeight/2 - padding;
-            boxWidth = maxWidth + padding * 2;
-            const boxHeight = totalHeight + padding * 2;
             
             ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
             
@@ -637,33 +671,50 @@ function getTextAtPosition(x, y) {
         // 複数行テキストの境界ボックスを計算
         const lines = textObj.lines || [textObj.text];
         const lineHeight = parseInt(textObj.fontSize) * 1.2;
-        const totalHeight = lines.length * lineHeight;
-        
-        // 最大幅を計算
-        let maxWidth = 0;
-        lines.forEach(line => {
-            const metrics = ctx.measureText(line);
-            maxWidth = Math.max(maxWidth, metrics.width);
-        });
-        
-        ctx.restore();
-        
-        // テキストの境界ボックス内かチェック（複数行対応）
         const padding = 5;
-        let boxX;
+        let boxX, boxY, boxWidth, boxHeight;
         
-        // 配置に応じて境界ボックスの位置を調整
-        if (textObj.textAlign === 'center') {
-            boxX = textObj.x - maxWidth/2 - padding;
-        } else if (textObj.textAlign === 'right') {
-            boxX = textObj.x - maxWidth - padding;
+        if (textObj.writingMode === 'vertical') {
+            // 縦書きの場合
+            const totalWidth = lines.length * lineHeight;
+            
+            // 最大高さを計算
+            let maxHeight = 0;
+            lines.forEach(line => {
+                const chars = line.split('');
+                maxHeight = Math.max(maxHeight, chars.length * lineHeight);
+            });
+            
+            boxX = textObj.x - totalWidth/2 - padding;
+            boxY = textObj.y - maxHeight/2 - padding;
+            boxWidth = totalWidth + padding * 2;
+            boxHeight = maxHeight + padding * 2;
         } else {
-            boxX = textObj.x - padding;
+            // 横書きの場合
+            const totalHeight = lines.length * lineHeight;
+            
+            // 最大幅を計算
+            let maxWidth = 0;
+            lines.forEach(line => {
+                const metrics = ctx.measureText(line);
+                maxWidth = Math.max(maxWidth, metrics.width);
+            });
+            
+            // 配置に応じて境界ボックスの位置を調整
+            if (textObj.textAlign === 'center') {
+                boxX = textObj.x - maxWidth/2 - padding;
+            } else if (textObj.textAlign === 'right') {
+                boxX = textObj.x - maxWidth - padding;
+            } else {
+                boxX = textObj.x - padding;
+            }
+            
+            boxY = textObj.y - totalHeight/2 - padding;
+            boxWidth = maxWidth + padding * 2;
+            boxHeight = totalHeight + padding * 2;
         }
         
-        const boxY = textObj.y - totalHeight/2 - padding;
-        const boxWidth = maxWidth + padding * 2;
-        const boxHeight = totalHeight + padding * 2;
+        ctx.restore();
         
         if (x >= boxX && x <= boxX + boxWidth &&
             y >= boxY && y <= boxY + boxHeight) {
@@ -688,33 +739,50 @@ function getResizeHandleAtPosition(x, y) {
         // 複数行テキストの境界ボックスを計算
         const lines = textObj.lines || [textObj.text];
         const lineHeight = parseInt(textObj.fontSize) * 1.2;
-        const totalHeight = lines.length * lineHeight;
-        
-        // 最大幅を計算
-        let maxWidth = 0;
-        lines.forEach(line => {
-            const metrics = ctx.measureText(line);
-            maxWidth = Math.max(maxWidth, metrics.width);
-        });
-        
-        ctx.restore();
-        
-        // リサイズハンドルの位置を計算（複数行対応）
         const padding = 5;
-        let boxX, boxWidth;
+        let boxX, boxY, boxWidth, boxHeight;
         
-        // 配置に応じて枠の位置を調整
-        if (textObj.textAlign === 'center') {
-            boxX = textObj.x - maxWidth/2 - padding;
-        } else if (textObj.textAlign === 'right') {
-            boxX = textObj.x - maxWidth - padding;
+        if (textObj.writingMode === 'vertical') {
+            // 縦書きの場合
+            const totalWidth = lines.length * lineHeight;
+            
+            // 最大高さを計算
+            let maxHeight = 0;
+            lines.forEach(line => {
+                const chars = line.split('');
+                maxHeight = Math.max(maxHeight, chars.length * lineHeight);
+            });
+            
+            boxX = textObj.x - totalWidth/2 - padding;
+            boxY = textObj.y - maxHeight/2 - padding;
+            boxWidth = totalWidth + padding * 2;
+            boxHeight = maxHeight + padding * 2;
         } else {
-            boxX = textObj.x - padding;
+            // 横書きの場合
+            const totalHeight = lines.length * lineHeight;
+            
+            // 最大幅を計算
+            let maxWidth = 0;
+            lines.forEach(line => {
+                const metrics = ctx.measureText(line);
+                maxWidth = Math.max(maxWidth, metrics.width);
+            });
+            
+            // 配置に応じて枠の位置を調整
+            if (textObj.textAlign === 'center') {
+                boxX = textObj.x - maxWidth/2 - padding;
+            } else if (textObj.textAlign === 'right') {
+                boxX = textObj.x - maxWidth - padding;
+            } else {
+                boxX = textObj.x - padding;
+            }
+            
+            boxY = textObj.y - totalHeight/2 - padding;
+            boxWidth = maxWidth + padding * 2;
+            boxHeight = totalHeight + padding * 2;
         }
         
-        const boxY = textObj.y - totalHeight/2 - padding;
-        boxWidth = maxWidth + padding * 2;
-        const boxHeight = totalHeight + padding * 2;
+        ctx.restore();
         
         const handleSize = 10;
         const handleX = boxX + boxWidth - handleSize/2;
@@ -739,6 +807,7 @@ function openEditPanel(textObj) {
     document.getElementById('editFontFamily').value = textObj.fontFamily || "'Noto Sans JP', sans-serif";
     document.getElementById('editFontColor').value = textObj.color || '#000000';
     document.getElementById('editTextAlign').value = textObj.textAlign || 'left';
+    document.getElementById('editWritingMode').value = textObj.writingMode || 'horizontal';
     
     panel.dataset.textId = textObj.id;
     panel.style.display = 'block';
@@ -761,6 +830,7 @@ function updateTextObject() {
         textObj.fontFamily = document.getElementById('editFontFamily').value;
         textObj.color = document.getElementById('editFontColor').value;
         textObj.textAlign = document.getElementById('editTextAlign').value;
+        textObj.writingMode = document.getElementById('editWritingMode').value;
         
         redrawCanvas();
         closeEditPanel();
