@@ -207,7 +207,9 @@ function saveState() {
     const state = {
         canvasData: canvas.toDataURL(),
         baseCanvasData: baseCanvas.toDataURL(),
-        textObjects: JSON.parse(JSON.stringify(textObjects))
+        textObjects: JSON.parse(JSON.stringify(textObjects)),
+        canvasWidth: canvas.width,
+        canvasHeight: canvas.height
     };
     
     history.push(state);
@@ -232,17 +234,33 @@ function undo() {
         textObjects = JSON.parse(JSON.stringify(state.textObjects));
         selectedTextId = null;
         
+        // キャンバスサイズを復元
+        if (state.canvasWidth && state.canvasHeight) {
+            canvas.width = state.canvasWidth;
+            canvas.height = state.canvasHeight;
+            baseCanvas.width = state.canvasWidth;
+            baseCanvas.height = state.canvasHeight;
+        }
+
         // ベースキャンバスを復元
         const baseImg = new Image();
         baseImg.onload = function() {
+            // 古い履歴との互換性のため、画像サイズを優先
+            if (!state.canvasWidth || !state.canvasHeight) {
+                canvas.width = baseImg.width;
+                canvas.height = baseImg.height;
+                baseCanvas.width = baseImg.width;
+                baseCanvas.height = baseImg.height;
+            }
+
             baseCtx.clearRect(0, 0, baseCanvas.width, baseCanvas.height);
-            baseCtx.drawImage(baseImg, 0, 0);
-            
+            baseCtx.drawImage(baseImg, 0, 0, baseCanvas.width, baseCanvas.height);
+
             // メインキャンバスを復元
             const img = new Image();
             img.onload = function() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(img, 0, 0);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                 updateUndoButton();
             }
             img.src = state.canvasData;
@@ -885,7 +903,9 @@ function saveTemporary() {
     savedState = {
         canvasData: canvas.toDataURL(),
         baseCanvasData: baseCanvas.toDataURL(),
-        textObjects: JSON.parse(JSON.stringify(textObjects))
+        textObjects: JSON.parse(JSON.stringify(textObjects)),
+        canvasWidth: canvas.width,
+        canvasHeight: canvas.height
     };
     
     // ローカルストレージに保存
@@ -908,11 +928,14 @@ function loadTemporary() {
         // まず保存された画像からキャンバスサイズを取得
         const tempImg = new Image();
         tempImg.onload = function() {
+            const restoredWidth = savedState.canvasWidth || tempImg.width;
+            const restoredHeight = savedState.canvasHeight || tempImg.height;
+
             // キャンバスサイズを設定
-            canvas.width = tempImg.width;
-            canvas.height = tempImg.height;
-            baseCanvas.width = tempImg.width;
-            baseCanvas.height = tempImg.height;
+            canvas.width = restoredWidth;
+            canvas.height = restoredHeight;
+            baseCanvas.width = restoredWidth;
+            baseCanvas.height = restoredHeight;
             
             // テキストオブジェクトを復元
             textObjects = JSON.parse(JSON.stringify(savedState.textObjects));
@@ -922,7 +945,7 @@ function loadTemporary() {
             const baseImg = new Image();
             baseImg.onload = function() {
                 baseCtx.clearRect(0, 0, baseCanvas.width, baseCanvas.height);
-                baseCtx.drawImage(baseImg, 0, 0);
+                baseCtx.drawImage(baseImg, 0, 0, baseCanvas.width, baseCanvas.height);
                 
                 // キャンバスを復元（テキストを含む状態に再描画）
                 redrawCanvas();
